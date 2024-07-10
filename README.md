@@ -16,17 +16,17 @@ https://gdngy.tistory.com/186
 
 [예제]
 
-// 주: 이 코드는 예시용으로, 실제 보안 상황에서는 적합하지 않을 수 있습니다.
-#include <cryptopp/aes.h>
-#include <cryptopp/modes.h>
+// 주: 이 코드는 예시용으로, 실제 보안 상황에서는 적합하지 않을 수 있습니다.  
+#include <cryptopp/aes.h>  
+#include <cryptopp/modes.h>  
 #include <cryptopp/filters.h>  
-
-void aes_encrypt(std::string plaintext, byte* key, std::string& ciphertext) {
-    CryptoPP::AES::Encryption aesEncryption(key, CryptoPP::AES::DEFAULT_KEYLENGTH);
+  
+void aes_encrypt(std::string plaintext, byte* key, std::string& ciphertext) {  
+    CryptoPP::AES::Encryption aesEncryption(key, CryptoPP::AES::DEFAULT_KEYLENGTH);  
     CryptoPP::ECB_Mode_ExternalCipher::Encryption ecbEncryption(aesEncryption);  
 
-    CryptoPP::StringSource(plaintext, true, 
-        new CryptoPP::StreamTransformationFilter(ecbEncryption, new CryptoPP::StringSink(ciphertext)));
+    CryptoPP::StringSource(plaintext, true,  
+        new CryptoPP::StreamTransformationFilter(ecbEncryption, new CryptoPP::StringSink  (ciphertext)));  
 }
 
 비대칭키 암호화는 암호화와 복호화에 서로 다른 키를 사용합니다. 가장 널리 사용되는 비대칭키 암호화 알고리즘은 RSA입니다.
@@ -37,19 +37,18 @@ void aes_encrypt(std::string plaintext, byte* key, std::string& ciphertext) {
 [예제]
 
 // 주: 이 코드는 예시용으로, 실제 보안 상황에서는 적합하지 않을 수 있습니다.
-#include <cryptopp/rsa.h>
-#include <cryptopp/osrng.h>
-#include <cryptopp/files.h>
+#include <cryptopp/rsa.h>  
+#include <cryptopp/osrng.h>  
+#include <cryptopp/files.h>  
 #include <cryptopp/base64.h>  
 
-void rsa_sign(std::string message, CryptoPP::RSA::PrivateKey privateKey, std::string& signature) {
+void rsa_sign(std::string message, CryptoPP::RSA::PrivateKey privateKey, std::string&signature) {  
     CryptoPP::RSASSA_PKCS1v15_SHA_Signer signer(privateKey);  
 
-    CryptoPP::StringSource(message, true, 
-        new CryptoPP::SignerFilter(CryptoPP::AutoSeededRandomPool(), signer,
-            new CryptoPP::Base64Encoder(new CryptoPP::StringSink(signature))));
-}
- 
+    CryptoPP::StringSource(message, true,  
+        new CryptoPP::SignerFilter(CryptoPP::AutoSeededRandomPool(), signer,  
+            new CryptoPP::Base64Encoder(new CryptoPP::StringSink(signature))));  
+}  
 
 암호화와 디지털 서명을 이해하고 구현하는 것은 네트워크 보안의 핵심적인 요소입니다. 그러나, 이들은 매우 복잡하고, 잘못 구현하면 심각한 보안 위험을 초래할 수 있으므로, 가능한 한 표준 라이브러리를 사용하는 것이 좋습니다. 또한, 이러한 알고리즘을 사용할 때는 해당 국가의 암호화에 관한 법률을 반드시 준수해야 합니다. 
 
@@ -69,31 +68,31 @@ C++로 작성된 간단한 HTTPS 클라이언트 예제는 아래와 같습니�
 
 [예제]
 
-// 주: 이 코드는 예시용으로, 실제 보안 상황에서는 적합하지 않을 수 있습니다.
+// 주: 이 코드는 예시용으로, 실제 보안 상황에서는 적합하지 않을 수 있습니다.  
 #include <curl/curl.h>  
 
-int main() {
-    CURL *curl;
+int main() {  
+    CURL *curl;  
     CURLcode res;  
 
-    curl_global_init(CURL_GLOBAL_DEFAULT);
+    curl_global_init(CURL_GLOBAL_DEFAULT);  
     curl = curl_easy_init();  
 
-    if(curl) {
-        curl_easy_setopt(curl, CURLOPT_URL, "https://www.example.com");
+    if(curl) {  
+        curl_easy_setopt(curl, CURLOPT_URL, "https://www.example.com");  
         res = curl_easy_perform(curl);  
 
-        if(res != CURLE_OK) {
-            fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
+        if(res != CURLE_OK) {  
+            fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));  
         }  
 
-        curl_easy_cleanup(curl);
+        curl_easy_cleanup(curl);  
     }  
 
     curl_global_cleanup();  
 
-    return 0;
-}
+    return 0;  
+}  
 
 이 코드는 "https://www.example.com"으로 HTTPS 요청을 보내는 역할을 합니다. libcurl 라이브러리는 내부적으로 SSL/TLS를 처리하여 데이터를 안전하게 전송합니다.  
 
@@ -113,53 +112,53 @@ SSL/TLS에 대한 개념을 살펴보았습니다. 이제는 실제 코드를 �
 
 [예제]
 
-#include <iostream>
-#include <openssl/ssl.h>
+#include <iostream>  
+#include <openssl/ssl.h>  
 #include <openssl/bio.h>  
 
-int main() {
-    // SSL 라이브러리 초기화
-    SSL_load_error_strings();
-    SSL_library_init();  
+int main() {  
+    // SSL 라이브러리 초기화  
+    SSL_load_error_strings();  
+    SSL_library_init();   
 
-    // SSL 컨텍스트 생성
-    SSL_CTX * ctx = SSL_CTX_new(SSLv23_client_method());  
+    // SSL 컨텍스트 생성  
+    SSL_CTX * ctx = SSL_CTX_new(SSLv23_client_method());   
 
-    // BIO 구조체 생성
+    // BIO 구조체 생성  
     BIO * bio = BIO_new_ssl_connect(ctx);  
 
-    // SSL 구조체 생성
-    SSL * ssl;
-    BIO_get_ssl(bio, &ssl);
+    // SSL 구조체 생성  
+    SSL * ssl;  
+    BIO_get_ssl(bio, &ssl);  
     SSL_set_mode(ssl, SSL_MODE_AUTO_RETRY);  
 
-    // 웹 서버와 연결
+    // 웹 서버와 연결  
     BIO_set_conn_hostname(bio, "www.example.com:https");  
 
-    // 연결 시도
-    if(BIO_do_connect(bio) <= 0) {
-        std::cerr << "Connection Error" << std::endl;
-        BIO_free_all(bio);
-        SSL_CTX_free(ctx);
-        return -1;
-    }  
+    // 연결 시도  
+    if(BIO_do_connect(bio) <= 0) {  
+        std::cerr << "Connection Error" << std::endl;  
+        BIO_free_all(bio);  
+        SSL_CTX_free(ctx);  
+        return -1;  
+    }   
 
-    // 서버에 메시지 전송
+    // 서버에 메시지 전송  
     BIO_write(bio, "GET / HTTP/1.1\r\nHost: www.example.com\r\n\r\n", 47);  
 
-    // 응답 받기
-    char buf[1024];
-    memset(buf, 0, sizeof(buf));
+    // 응답 받기  
+    char buf[1024];  
+    memset(buf, 0, sizeof(buf));  
     BIO_read(bio, buf, 1024);  
 
     std::cout << "Response:\n" << buf << std::endl;  
 
-    // 연결 종료
-    BIO_free_all(bio);
-    SSL_CTX_free(ctx);  
+    // 연결 종료  
+    BIO_free_all(bio);  
+    SSL_CTX_free(ctx);   
 
-    return 0;
-}
+    return 0;  
+}  
 
 이 코드는 www.example.com에 SSL/TLS 연결을 생성하고, 간단한 HTTP GET 요청을 전송한 다음 응답을 출력합니다. 여기서는 SSL/TLS 연결을 위해 OpenSSL의 BIO 인터페이스를 사용했습니다. BIO 인터페이스는 OpenSSL에서 제공하는 입출력 추상화 계층으로, 소켓이나 파일 등 다양한 IO에 사용될 수 있습니다. 
 
