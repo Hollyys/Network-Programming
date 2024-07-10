@@ -2,7 +2,7 @@
 ## 참조 URL:  
 https://gdngy.tistory.com/186  
   
-# 네트워크 보안 개념  
+# 14.5. 네트워크 보안 개념  
 
 네트워크 보안은 정보와 정보를 전송하는 네트워크 자체를 보호하는 과정을 의미합니다. 주요 보안 목표는 기밀성, 무결성, 가용성(CIA)이며, 이를 위해 인증, 인가, 부인방지 등의 메커니즘이 사용됩니다. 인터넷에서 가장 많이 사용하는 보안 프로토콜은 TLS와 SSL입니다. 이 프로토콜들은 데이터를 암호화하고, 상대방의 신원을 확인하며, 데이터 무결성을 보장합니다. C/C++ 프로그래머는 이런 보안 메커니즘을 이해하고, 적용해야 합니다.  
   
@@ -228,3 +228,430 @@ int main() {
 그러나 이 예제 코드는 간단한 해시 생성의 예를 보여줄 뿐, 실제 네트워크 통신에서는 SSL/TLS와 같은 보안 프로토콜을 이용해야 합니다. 이러한 프로토콜은 데이터의 무결성뿐 아니라 기밀성, 인증 등을 모두 보장합니다.
 
 보안은 네트워크 프로그래밍에서 빠질 수 없는 중요한 부분입니다. 인터넷의 발전에 따라 정보는 점점 더 많이 공유되고 있고, 이로 인해 보안 위협 또한 점점 더 증가하고 있습니다. 따라서 암호화, 인증, 무결성 검사 등 다양한 보안 기법을 이해하고 적용하는 것은 모든 개발자에게 중요한 역량입니다.
+
+## 14.6. C/C++에서의 네트워크 보안 프로그래밍  
+C/C++에서의 네트워크 보안 프로그래밍은 애플리케이션의 보안 요소를 향상하는 데 필요한 기술과 접근 방식에 대한 이해를 필요로 합니다. 이는 데이터 암호화, 디지털 서명, 인증 메커니즘, 보안 소켓 계층 (SSL/TLS) 통신 등을 포함합니다. 또한, 공격자가 악용할 수 있는 보안 취약점을 이해하고 이를 방지하는 코드 작성 기법 역시 중요합니다. OpenSSL과 같은 보안 라이브러리를 사용하여 C/C++ 네트워크 애플리케이션의 보안을 향상할 수 있습니다.  
+
+### 14.6.1. SSL/TLS를 이용한 소켓 통신  
+C/C++을 사용한 SSL/TLS를 이용한 소켓 통신은 네트워크 데이터 전송의 보안성을 크게 향상합니다. 여기서 SSL은 Secure Socket Layer의 약자이며, TLS는 Transport Layer Security의 약자입니다. 이들은 암호화를 통해 데이터의 보안성을 향상하는 역할을 합니다. 
+
+OpenSSL 라이브러리를 사용해 C/C++에서 SSL/TLS 소켓 통신을 구현할 수 있습니다. OpenSSL은 SSL과 TLS 프로토콜을 사용하여 네트워크 통신을 암호화하는 데 사용되는 오픈 소스 라이브러리입니다. 
+
+먼저 OpenSSL을 설치해야 합니다. 우분투에서는 다음 명령을 사용해 설치할 수 있습니다. 
+
+    sudo apt-get install libssl-dev
+
+그러고 나서 C/C++에서 OpenSSL을 사용하기 위해 #include <openssl/ssl.h>를 코드 상단에 추가합니다.  
+
+간단한 SSL 클라이언트를 작성해 봅시다:  
+
+[예제]
+```cpp
+#include <stdio.h>
+#include <openssl/ssl.h>
+#include <openssl/err.h>  
+
+int main() {
+    SSL_library_init();
+    SSL_load_error_strings();
+    
+    SSL_CTX * ctx = SSL_CTX_new(TLS_client_method());
+    if (ctx == NULL) {
+        ERR_print_errors_fp(stderr);
+        return 1;
+    }
+    
+    SSL * ssl;
+    ssl = SSL_new(ctx);
+    
+    // 여기에서 SSL 연결을 생성하고 데이터를 전송합니다.
+    
+    SSL_free(ssl);
+    SSL_CTX_free(ctx);
+    return 0;
+}
+```
+
+이 예제에서는 SSL 라이브러리를 초기화하고, SSL context를 생성한 다음, SSL 구조체를 만듭니다. SSL context는 SSL 연결의 환경 설정을 가지고 있고, SSL 구조체는 실제 연결을 나타냅니다. SSL 연결을 종료할 때는 사용한 자원을 반드시 해제해야 합니다. 
+
+다음 단계는 SSL 연결을 생성하고 데이터를 전송하는 것입니다. 이 부분은 네트워크 연결에 따라 다르므로, 각자의 상황에 맞게 구현하셔야 합니다. 
+
+C++에서 OpenSSL을 사용하는 방법은 거의 비슷합니다. 헤더 파일을 include 하고, 동일한 함수를 호출하면 됩니다. 
+
+높은 수준의 보안을 제공하려면 SSL/TLS 연결에서 인증서를 사용해야 합니다. 인증서는 통신하는 두 당사자가 서로를 신뢰할 수 있도록 보장합니다. 인증서는 공개키 암호화를 사용하는데, 이는 데이터를 암호화하는 데 사용되는 키와 데이터를 복호화하는 데 사용되는 키가 다르다는 것을 의미합니다. 인증서에는 공개 키와 서명이 포함되어 있습니다. 
+
+서버가 SSL 인증서를 사용하도록 설정하려면, SSL context를 설정하는 동안 SSL_CTX_use_certificate_file과 SSL_CTX_use_PrivateKey_file 함수를 사용해 인증서 파일과 개인 키 파일을 지정해야 합니다. 다음은 서버가 인증서를 사용하도록 설정하는 예제입니다.
+
+[예제]
+```cpp
+#include <openssl/ssl.h>
+#include <openssl/err.h>  
+
+int main() {
+    SSL_library_init();
+    SSL_load_error_strings();
+    
+    SSL_CTX * ctx = SSL_CTX_new(TLS_server_method());
+    if (ctx == NULL) {
+        ERR_print_errors_fp(stderr);
+        return 1;
+    }
+    
+    if (SSL_CTX_use_certificate_file(ctx, "server.crt", SSL_FILETYPE_PEM) != 1) {
+        ERR_print_errors_fp(stderr);
+        return 1;
+    }
+    
+    if (SSL_CTX_use_PrivateKey_file(ctx, "server.key", SSL_FILETYPE_PEM) != 1) {
+        ERR_print_errors_fp(stderr);
+        return 1;
+    }
+    
+    SSL * ssl;
+    ssl = SSL_new(ctx);
+    
+    // 여기에서 SSL 연결을 수락하고 데이터를 전송합니다.
+    
+    SSL_free(ssl);
+    SSL_CTX_free(ctx);
+    return 0;
+}
+```
+
+이 코드에서 server.crt는 서버의 인증서 파일이고, server.key는 서버의 개인 키 파일입니다. 이 두 파일은 실제로 서버의 신원을 나타내고, 클라이언트가 서버를 신뢰할 수 있음을 보장합니다. 이러한 보안 메커니즘이 없다면, 공격자가 중간에서 통신을 가로채거나 데이터를 변조하는 것이 가능하므로, 보안성이 크게 감소하게 됩니다. 
+
+### 14.6.2. 공개키/개인키 생성과 사용  
+네트워크 보안에서 공개키와 개인키는 핵심적인 요소입니다. 공개키 암호화는 데이터를 보호하는 방법 중 하나이며, 이는 공개키(누구나 볼 수 있는 키)를 사용하여 데이터를 암호화하고 개인키(비밀 키)를 사용하여 데이터를 복호화합니다. 이 과정을 통해 중요한 데이터는 안전하게 전송되고, 공개키를 가진 사람만이 데이터를 볼 수 있습니다. 
+
+C++에서는 OpenSSL 라이브러리를 사용하여 공개키와 개인키를 생성하고 사용할 수 있습니다. OpenSSL은 SSL/TLS 프로토콜을 구현하는 데 사용되며, 키 생성, 암호화, 복호화 등 여러 가지 기능을 제공합니다. 
+
+먼저, RSA 공개키/개인키 쌍을 생성하는 방법을 알아보겠습니다. 아래 코드는 OpenSSL을 사용하여 2048비트 RSA 키 쌍을 생성하고 PEM 형식으로 저장하는 방법을 보여줍니다. 
+
+[예제]
+```cpp
+#include <openssl/rsa.h>
+#include <openssl/pem.h>  
+
+int main() {
+    int ret = 0;
+    RSA *r = RSA_new();
+    BIGNUM *bne = BN_new();
+    ret = BN_set_word(bne, RSA_F4);
+    ret = RSA_generate_key_ex(r, 2048, bne, NULL);  
+
+    BIO *bp_public = NULL, *bp_private = NULL;
+    bp_public = BIO_new_file("public.pem", "w+");
+    ret = PEM_write_bio_RSAPublicKey(bp_public, r);  
+
+    bp_private = BIO_new_file("private.pem", "w+");
+    ret = PEM_write_bio_RSAPrivateKey(bp_private, r, NULL, NULL, 0, NULL, NULL);  
+
+    BIO_free_all(bp_public);
+    BIO_free_all(bp_private);
+    RSA_free(r);
+    BN_free(bne);  
+
+    return ret;
+}
+```
+
+위의 코드는 RSA_generate_key_ex 함수를 사용하여 2048비트 RSA 키를 생성하며, PEM_write_bio_RSAPublicKey와 PEM_write_bio_RSAPrivateKey 함수를 사용하여 공개키와 개인키를 각각 "public.pem"과 "private.pem" 파일에 저장합니다. 이제 이 키들을 사용하여 데이터를 암호화하고 복호화하는 방법을 알아보겠습니다. 
+
+다음 코드는 공개키를 사용하여 텍스트를 암호화하고 개인키를 사용하여 복호화하는 과정을 보여줍니다. 
+
+[예제]
+```cpp
+#include <openssl/pem.h>
+#include <openssl/rsa.h>  
+
+// 공개키를 이용한 암호화
+RSA *publicRSA = NULL;
+FILE *pubKeyFile = fopen("public.pem", "rb");
+PEM_read_RSAPublicKey(pubKeyFile, &publicRSA, NULL, NULL);
+char msg[200] = "Hello, World!";
+unsigned char enc[256];
+int enc_len = RSA_public_encrypt(strlen(msg)+1, (unsigned char*)msg, enc, publicRSA, RSA_PKCS1_OAEP_PADDING);  
+
+// 개인키를 이용한 복호화
+RSA *privateRSA = NULL;
+FILE *privKeyFile = fopen("private.pem", "rb");
+PEM_read_RSAPrivateKey(privKeyFile, &privateRSA, NULL, NULL);
+char dec[200];
+RSA_private_decrypt(enc_len, enc, (unsigned char*)dec, privateRSA, RSA_PKCS1_OAEP_PADDING);  
+
+printf("Decrypted: %s\n", dec);
+ ```
+
+위의 코드는 "Hello, World!" 문자열을 암호화하고 복호화하는 과정을 보여줍니다. 공개키를 사용하여 암호화하고 개인키를 사용하여 복호화합니다. 이로써 안전하게 데이터를 전송하고 복호화하는 과정을 살펴봤습니다. 
+
+이러한 방법을 사용하면 네트워크를 통해 안전하게 정보를 전송하고 수신할 수 있습니다. 하지만 이 방법은 공개키와 개인키를 안전하게 보관하고 관리해야 한다는 것을 의미합니다. 왜냐하면 개인키가 유출되면 악의적인 사용자가 데이터를 복호화할 수 있기 때문입니다. 그러므로 키 관리는 네트워크 보안에서 매우 중요한 부분입니다. 
+
+이 외에도 OpenSSL 라이브러리는 다양한 암호화 알고리즘과 통신 프로토콜을 지원하므로, 여러분의 요구에 맞게 사용할 수 있습니다. 계속해서 보안에 대해 배우고 실습하면서 이를 활용해 보세요. 
+
+공개키와 개인키가 생성되고 사용되는 것에 대해 이해했다면, 이제 이 키들을 어떻게 안전하게 보관하고 관리하는지 알아볼 필요가 있습니다. 일반적으로 개인키는 공개키에 비해 더욱 중요하게 다루어져야 합니다. 왜냐하면 개인키는 데이터의 복호화에 사용되므로, 개인키가 유출되면 암호화된 데이터가 노출될 수 있기 때문입니다. 
+
+C++에서 개인키를 안전하게 관리하기 위한 방법 중 하나는 개인키를 디스크에 저장하는 대신 메모리에만 저장하는 것입니다. 이를 위해 RSA 구조체를 사용하여 개인키를 관리하고 프로그램이 종료되면 메모리에서 개인키를 삭제할 수 있습니다. 아래의 예제 코드는 이를 보여줍니다. 
+
+[예제]
+```cpp
+#include <openssl/rsa.h>
+#include <openssl/pem.h>  
+
+int main() {
+    int ret = 0;
+    RSA *r = RSA_new();
+    BIGNUM *bne = BN_new();
+    ret = BN_set_word(bne, RSA_F4);
+    ret = RSA_generate_key_ex(r, 2048, bne, NULL);  
+
+    /* 이제 r은 개인키를 가리킵니다. 
+     이 키를 필요로 하는 모든 곳에서 사용하고, 프로그램이 종료되면 메모리에서 삭제합니다. */  
+
+    RSA_free(r);
+    BN_free(bne);  
+
+    return ret;
+}
+ ```
+
+그러나 이 방법에는 한 가지 주의할 점이 있습니다. 개인키가 메모리에만 존재하므로, 프로그램이 종료되면 키가 영구적으로 사라집니다. 따라서 이러한 방법은 장기적으로 키를 저장해야 하는 경우에는 적합하지 않습니다.
+
+다른 방법으로는 키를 파일에 저장하되 파일의 읽기 권한을 적절하게 설정하여 파일이 유출되지 않도록 하는 방법이 있습니다. Linux와 같은 운영체제에서는 chmod 명령을 사용하여 파일 권한을 설정할 수 있습니다.
+
+또한, 키를 관리하는 또 다른 방법으로는 HSM(Hardware Security Module)을 사용하는 것입니다. HSM은 키를 안전하게 저장하고 관리하는 하드웨어 장치로, 키가 물리적으로 노출되는 것을 방지합니다.
+
+이처럼, 네트워크 보안에서는 단순히 암호화와 복호화뿐만 아니라 키 관리에도 주의를 기울여야 합니다. 보안은 많은 부분에서 중요한 역할을 하는데, 키 관리는 그중 하나입니다. 다양한 키 관리 방법을 이해하고 자신의 상황에 맞게 적용하는 것이 중요합니다.
+
+### 14.6.2.1. OpenSSL 라이브러리 사용  
+
+OpenSSL은 가장 널리 사용되는 암호화 라이브러리 중 하나로, SSL과 TLS를 포함한 다양한 암호화 알고리즘과 관련 도구들을 제공합니다. 이 라이브러리를 사용하면 C와 C++ 프로그램에서 간편하게 암호화 기능을 사용할 수 있습니다. 
+
+OpenSSL을 사용하기 위해 먼저 OpenSSL 라이브러리를 설치해야 합니다. Linux 운영체제에서는 패키지 매니저를 사용하여 간단하게 설치할 수 있습니다. 
+
+    sudo apt-get install libssl-dev
+
+이렇게 OpenSSL 라이브러리를 설치한 후에는, C/C++ 프로그램에서 다음과 같이 OpenSSL 라이브러리를 include 하여 사용할 수 있습니다.
+
+[예제]
+    #include <openssl/ssl.h>
+    #include <openssl/err.h>
+
+예를 들어, OpenSSL 라이브러리를 사용하여 암호화된 소켓을 생성하는 코드는 아래와 같습니다.  
+
+[예제]
+```cpp
+#include <openssl/ssl.h>
+#include <openssl/err.h>
+#include <sys/socket.h>
+#include <arpa/inet.h>
+#include <unistd.h>  
+
+#define MAXBUF 1024  
+
+int main() {
+    SSL_library_init();  
+
+    SSL_CTX *ctx = SSL_CTX_new(TLSv1_2_server_method());
+    if (SSL_CTX_use_certificate_file(ctx, "server.crt", SSL_FILETYPE_PEM) <= 0) {
+        ERR_print_errors_fp(stderr);
+        exit(EXIT_FAILURE);
+    }  
+
+    if (SSL_CTX_use_PrivateKey_file(ctx, "server.key", SSL_FILETYPE_PEM) <= 0 ) {
+        ERR_print_errors_fp(stderr);
+        exit(EXIT_FAILURE);
+    }  
+
+    // 소켓 생성 코드...
+}
+ ```
+
+이 코드는 TLS 1.2 버전의 서버 소켓을 생성하는 코드입니다. 먼저, SSL_library_init() 함수를 호출하여 OpenSSL 라이브러리를 초기화합니다. 그리고 SSL_CTX_new() 함수를 호출하여 SSL context를 생성하고, 이 context를 이용하여 인증서 파일과 개인키 파일을 로드합니다. 
+
+만약 이 과정에서 에러가 발생하면, ERR_print_errors_fp() 함수를 이용하여 에러 메시지를 출력합니다. 이 함수는 OpenSSL 라이브러리에서 발생하는 에러 메시지를 출력하는 데 사용됩니다. 
+
+이렇게 OpenSSL을 이용하면, C/C++에서도 쉽게 암호화된 소켓 통신을 구현할 수 있습니다. 하지만 OpenSSL 라이브러리는 매우 복잡하고 방대하므로, 복잡한 네트워크 보안 기능을 구현하기 위해서는 추가적인 학습이 필요합니다. 따라서 이 코드는 OpenSSL 라이브러리의 기본적인 사용 방법을 이해하는 데 도움이 될 것입니다. 
+
+### 14.6.3. 실습: SSL/TLS를 이용한 보안 채팅 서버 생성 
+본 실습에서는 SSL/TLS를 이용하여 보안이 강화된 채팅 서버를 만들어 보겠습니다. 먼저, C/C++와 OpenSSL 라이브러리에 대한 기본적인 지식이 있어야 합니다. 이전 섹션에서 다룬 내용이 이 실습을 이해하는 데 필요한 지식입니다.
+
+서버 코드 작성하기
+서버 코드는 클라이언트의 연결을 받아들이고, 연결된 클라이언트 간의 메시지를 중계하는 역할을 합니다. 또한 SSL/TLS를 이용하여 통신을 암호화하므로, 통신 내용이 외부에 노출되는 것을 방지합니다.
+
+다음은 보안 채팅 서버의 C++ 코드입니다:  
+
+[예제]
+```cpp
+#include <openssl/ssl.h>
+#include <openssl/err.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <unistd.h>
+#include <pthread.h>
+#include <iostream>
+#include <string>
+#include <vector>  
+
+#define MAXBUF 1024  
+
+// 여기서부터 코드가 계속됩니다...
+```
+
+먼저 OpenSSL 라이브러리와 관련 헤더 파일들을 include 합니다. 그리고 필요한 상수와 전역 변수들을 정의합니다.  
+
+코드를 계속 작성해 나가겠습니다. 만약 어떤 부분이 이해가 되지 않거나 더 자세한 설명이 필요하다면 언제든지 질문해 주세요. 이제부터 코드를 작성하기 전에, 채팅 서버의 기본적인 동작 방식을 이해하는 것이 중요합니다. 채팅 서버는 클라이언트의 연결을 계속해서 수용하면서, 동시에 연결된 클라이언트들 간의 메시지를 중계해야 합니다. 이를 위해 멀티스레딩을 사용하여 각 클라이언트의 연결을 독립적으로 처리하도록 구현하겠습니다.
+
+이제부터 본격적으로 코드를 작성해 보겠습니다. 우선, 메인 함수에서는 서버 소켓을 생성하고, 클라이언트의 연결을 대기하는 역할을 합니다. 이후에는 각 클라이언트의 연결을 처리하는 스레드를 생성하여, 클라이언트 간의 통신을 처리합니다.  
+
+아래는 이 부분의 코드입니다. 코드를 보면서 어떤 부분이 이해가 안 되면 말해주세요. 이 코드를 이해하는 데 필요한 모든 지식을 가지고 계시다면, 직접 실행해 보세요. 아직 이해하지 못한 부분이 있다면, 조금 더 설명하겠습니다. 이제부터 코드를 살펴봅시다. 이 코드는 채팅 서버를 구현하는 데 필요한 기본적인 부분을 담고 있습니다. 
+
+[예제]
+```cpp
+// 연결된 클라이언트들의 정보를 저장하는 벡터
+std::vector<int> clients;  
+
+void *handle_client(void *client) {
+    int client_sock = *(int *)client;
+    char buffer[MAXBUF];
+    SSL_CTX *ctx;
+    const SSL_METHOD *method;
+    SSL *ssl;  
+
+    // SSL 라이브러리 초기화
+    SSL_load_error_strings();
+    OpenSSL_add_ssl_algorithms();
+    method = SSLv23_server_method();
+    ctx = SSL_CTX_new(method);
+    if (ctx == NULL) {
+        ERR_print_errors_fp(stderr);
+        abort();
+    }  
+
+    // 인증서 로드
+    if (SSL_CTX_use_certificate_file(ctx, "cert.pem", SSL_FILETYPE_PEM) <= 0) {
+        ERR_print_errors_fp(stderr);
+        abort();
+    }
+    if (SSL_CTX_use_PrivateKey_file(ctx, "key.pem", SSL_FILETYPE_PEM) <= 0) {
+        ERR_print_errors_fp(stderr);
+        abort();
+    }
+    
+    ssl = SSL_new(ctx);
+    SSL_set_fd(ssl, client_sock);
+    if (SSL_accept(ssl) <= 0) {
+        ERR_print_errors_fp(stderr);
+    }  
+
+    while (true) {
+        memset(buffer, 0, sizeof(buffer));
+        if (SSL_read(ssl, buffer, MAXBUF) <= 0) {
+            break;
+        }
+        
+        for (int i = 0; i < clients.size(); ++i) {
+            if (clients[i] != client_sock) {
+                SSL_write(ssl, buffer, strlen(buffer));
+            }
+        }
+    }  
+
+    SSL_free(ssl);
+    close(client_sock);
+    clients.erase(std::remove(clients.begin(), clients.end(), client_sock), clients.end());  
+
+    return NULL;
+}  
+
+int main() {
+    int server_sock;
+    sockaddr_in server_addr;  
+
+    server_sock = socket(AF_INET, SOCK_STREAM, 0);
+    server_addr.sin_family = AF_INET;
+    server_addr.sin_port = htons(8080);
+    server_addr.sin_addr.s_addr = htonl(INADDR_ANY);  
+
+    bind(server_sock, (struct sockaddr*)&server_addr, sizeof(server_addr));
+    listen(server_sock, 5);  
+
+    while (true) {
+        sockaddr_in client_addr;
+        socklen_t client_len = sizeof(client_addr);
+        int client_sock = accept(server_sock, (struct sockaddr*)&client_addr, &client_len);
+        clients.push_back(client_sock);  
+
+        pthread_t client_thread;
+        pthread_create(&client_thread, NULL, handle_client, (void *)&client_sock);
+    }  
+
+    return 0;
+}
+ ```
+
+위의 코드는 SSL/TLS를 이용한 보안 채팅 서버의 코드입니다. 서버는 클라이언트의 연결을 받아들이고, 해당 클라이언트에 대한 스레드를 생성합니다. 각 스레드는 클라이언트와의 통신을 SSL/TLS로 암호화하며, 클라이언트가 보낸 메시지를 다른 모든 클라이언트에게 전송합니다. 
+
+이해가 되지 않는 부분이나 추가적으로 궁금한 점이 있으면 언제든지 질문해 주세요. 이제부터 각 코드 라인의 설명을 추가로 제공하겠습니다. 
+
+이제 위 코드의 세부 사항을 살펴보겠습니다. 
+
+[예제]
+
+    SSL_CTX *ctx;
+    const SSL_METHOD *method;
+    SSL *ssl;
+
+여기에서 SSL_CTX는 SSL 콘텍스트로, 모든 SSL 작업의 기반을 제공합니다. SSL_METHOD는 특정 SSL 버전을 나타내며, SSL은 특정 연결에 대한 SSL 세션을 나타냅니다.
+
+[예제]
+
+    SSL_load_error_strings();
+    OpenSSL_add_ssl_algorithms();
+
+SSL_load_error_strings() 함수는 에러 메시지를 초기화하고, OpenSSL_add_ssl_algorithms() 함수는 가능한 SSL 암호화 알고리즘을 추가합니다.
+
+ 
+
+[예제]
+
+    method = SSLv23_server_method();
+    ctx = SSL_CTX_new(method);
+
+이 부분에서는 SSL 메서드를 선택하고 SSL 콘텍스트를 생성합니다. SSLv23_server_method()는 서버 측에서 사용되며, 가능한 모든 SSL/TLS 버전을 사용하도록 설정합니다. 
+
+[예제]
+```cpp
+if (SSL_CTX_use_certificate_file(ctx, "cert.pem", SSL_FILETYPE_PEM) <= 0) {
+    ERR_print_errors_fp(stderr);
+    abort();
+}
+if (SSL_CTX_use_PrivateKey_file(ctx, "key.pem", SSL_FILETYPE_PEM) <= 0) {
+    ERR_print_errors_fp(stderr);
+    abort();
+}
+```
+여기서는 인증서 파일과 개인키 파일을 로드하며, 실패할 경우 에러 메시지를 출력하고 프로그램을 종료합니다.  
+
+[예제]
+```cpp
+ssl = SSL_new(ctx);
+SSL_set_fd(ssl, client_sock);
+if (SSL_accept(ssl) <= 0) {
+    ERR_print_errors_fp(stderr);
+}
+```
+SSL_new()는 SSL 세션을 생성하고, SSL_set_fd()는 SSL 세션을 소켓에 바인드 합니다. SSL_accept()는 클라이언트와의 SSL 핸드셰이크를 수행합니다. 
+
+[예제]
+```cpp
+if (SSL_read(ssl, buffer, MAXBUF) <= 0) {
+    break;
+}
+``` 
+SSL_read()는 SSL 세션에서 데이터를 읽습니다. 만약 읽은 데이터의 길이가 0 이하이면, 이는 소켓이 닫혔거나 에러가 발생한 것을 나타냅니다.
+
+[예제]
+
+    SSL_write(ssl, buffer, strlen(buffer));
+SSL_write()는 SSL 세션에 데이터를 씁니다. 이 함수는 write()와 비슷하게 작동하지만, 데이터를 암호화해서 전송합니다. 
